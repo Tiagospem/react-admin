@@ -1,6 +1,6 @@
 # Upgrade to 3.0
 
-We took advantage of the major release to fix all the problems in react-admin that required a breaking change. As a consequence, you'll need to do many small changes in the code of existing react-admin v2 applications. Follow this step-by-step guide to upgrade to react-admin v3.  
+We took advantage of the major release to fix all the problems in react-admin that required a breaking change. As a consequence, you'll need to do many small changes in the code of existing react-admin v2 applications. Follow this step-by-step guide to upgrade to react-admin v3.
 
 ## Upgrade all react-admin packages
 
@@ -28,14 +28,14 @@ In the `packages.json`, upgrade ALL react-admin related dependencies to 3.0.0. T
     },
 ```
 
-Failing to upgrade one of the `ra-` packages will result in a duplication of the react-admin package in two incompatible versions, and cause hard-to-debug bugs.  
+Failing to upgrade one of the `ra-` packages will result in a duplication of the react-admin package in two incompatible versions, and cause hard-to-debug bugs.
 
 ## Increased version requirement for key dependencies
 
-* `react` and `react-dom` are now required to be >= 16.9. This version is backward compatible with 16.3, which was the minimum requirement in react-admin, and it offers the support for Hooks, on which react-admin v3 relies heavily.
-* `react-redux` requires a minimum version of 7.1.0 (instead of 5.0). Check their upgrade guide for [6.0](https://github.com/reduxjs/react-redux/releases/tag/v6.0.0) and [7.0](https://github.com/reduxjs/react-redux/releases/tag/v7.0.0)
-* `redux-saga` requires a minimim version of 1.0.0 (instead of ~0.16.0). Check their [list of breaking changes for redux-saga 1.0](https://github.com/redux-saga/redux-saga/releases/tag/v1.0.0) on GitHub. 
-* `material-ui` requires a minimum of 4.0.0 (instead of 1.5). Check their [Upgrade guide](https://next.material-ui.com/guides/migration-v3/).
+-   `react` and `react-dom` are now required to be >= 16.9. This version is backward compatible with 16.3, which was the minimum requirement in react-admin, and it offers the support for Hooks, on which react-admin v3 relies heavily.
+-   `react-redux` requires a minimum version of 7.1.0 (instead of 5.0). Check their upgrade guide for [6.0](https://github.com/reduxjs/react-redux/releases/tag/v6.0.0) and [7.0](https://github.com/reduxjs/react-redux/releases/tag/v7.0.0)
+-   `redux-saga` requires a minimim version of 1.0.0 (instead of ~0.16.0). Check their [list of breaking changes for redux-saga 1.0](https://github.com/redux-saga/redux-saga/releases/tag/v1.0.0) on GitHub.
+-   `material-ui` requires a minimum of 4.0.0 (instead of 1.5). Check their [Upgrade guide](https://next.material-ui.com/guides/migration-v3/).
 
 ## `react-router-redux` replaced by `connected-react-router`
 
@@ -109,19 +109,32 @@ If you were using custom buttons (to alter the form values before submit for exa
 
 The migration to `react-final-form` changes their signature and behavior to the following:
 
-- `handleSubmit`: accepts no arguments, and will submit the form with its current values immediately
-- `handleSubmitWithRedirect` accepts a custom redirect, and will submit the form with its current values immediately
+-   `handleSubmit`: accepts no arguments, and will submit the form with its current values immediately
+-   `handleSubmitWithRedirect` accepts a custom redirect, and will submit the form with its current values immediately
 
-Here's how to migrate the *Altering the Form Values before Submitting* example from the documentation, in two variants:
+Attention, react-final-form doesn't split form validation and form submission.
+If you want `handleSubmit` and `handleSubmitWithRedirect`
+
+Here's how to migrate the _Altering the Form Values before Submitting_ example from the documentation, in two variants:
 
 1. Using the `react-final-form` hook API to send change events
 
 ```jsx
 import React, { useCallback } from 'react';
 import { useForm } from 'react-final-form';
-import { SaveButton, Toolbar, useCreate, useRedirect, useNotify } from 'react-admin';
+import {
+    SaveButton,
+    Toolbar,
+    useCreate,
+    useRedirect,
+    useNotify,
+} from 'react-admin';
 
-const SaveWithNoteButton = ({ handleSubmit, handleSubmitWithRedirect, ...props }) => {
+const SaveWithNoteButton = ({
+    handleSubmit,
+    handleSubmitWithRedirect,
+    ...props
+}) => {
     const [create] = useCreate('posts');
     const redirectTo = useRedirect();
     const notify = useNotify();
@@ -145,47 +158,42 @@ For instance, in the `simple` example:
 
 ```jsx
 import React, { useCallback } from 'react';
-import { useFormState } from 'react-final-form';
-import { SaveButton, Toolbar, useCreate, useRedirect, useNotify } from 'react-admin';
+import {
+    SaveButton,
+    Toolbar,
+    useCreate,
+    useRedirect,
+    useNotify,
+} from 'react-admin';
 
 const SaveWithNoteButton = props => {
     const [create] = useCreate('posts');
     const redirectTo = useRedirect();
     const notify = useNotify();
-    const { basePath, redirect } = props;
+    const { basePath } = props;
 
-    const formState = useFormState();
-    const handleClick = useCallback(() => {
-        if (!formState.valid) {
-            return;
-        }
-
-        create(
-            {
-                payload: {
-                    data: { ...formState.values, average_note: 10 },
+    const handleSave = useCallback(
+        (values, redirect) => {
+            create(
+                {
+                    payload: {
+                        data: { values, average_note: 10 },
+                    },
                 },
-            },
-            {
-                onSuccess: ({ data: newRecord }) => {
-                    notify('ra.notification.created', 'info', {
-                        smart_count: 1,
-                    });
-                    redirectTo(redirect, basePath, newRecord.id, newRecord);
-                },
-            }
-        );
-    }, [
-        formState.valid,
-        formState.values,
-        create,
-        notify,
-        redirectTo,
-        redirect,
-        basePath,
-    ]);
+                {
+                    onSuccess: ({ data: newRecord }) => {
+                        notify('ra.notification.created', 'info', {
+                            smart_count: 1,
+                        });
+                        redirectTo(redirect, basePath, newRecord.id, newRecord);
+                    },
+                }
+            );
+        },
+        [create, notify, redirectTo, basePath]
+    );
 
-    return <SaveButton {...props} handleSubmitWithRedirect={handleClick} />;
+    return <SaveButton {...props} onSave={handleSave} />;
 };
 ```
 
@@ -268,8 +276,8 @@ Form validators used to return translated error messages - that's why they recei
 In case the error message depends on a variable, you can return an object `{ message, args }` instead of a message string:
 
 ```diff
--const minLength = (min) => (value, allValues, props) => 
-+const minLength = (min) => (value, allValues) => 
+-const minLength = (min) => (value, allValues, props) =>
++const minLength = (min) => (value, allValues) =>
     value.length >= min
         ? undefined
 -       : props.translate('myroot.validation.minLength', { min });
@@ -293,12 +301,16 @@ const validateFirstName = [required(), minLength(2), maxLength(15)];
 const validateEmail = email();
 const validateAge = [number(), minValue(18)];
 
-export const UserCreate = (props) => (
+export const UserCreate = props => (
     <Create {...props}>
         <SimpleForm>
-            <TextInput label="First Name" source="firstName" validate={validateFirstName} />
+            <TextInput
+                label="First Name"
+                source="firstName"
+                validate={validateFirstName}
+            />
             <TextInput label="Email" source="email" validate={validateEmail} />
-            <TextInput label="Age" source="age" validate={validateAge}/>
+            <TextInput label="Age" source="age" validate={validateAge} />
         </SimpleForm>
     </Create>
 );
@@ -306,7 +318,7 @@ export const UserCreate = (props) => (
 
 ## Migration to react-final-form Requires Custom App Modification
 
-We used to implement some black magic in `formMiddleware` to handle `redux-form` correctly. It is no longer necessary now that we migrated to `react-final-form`. Besides, `redux-form` required a reducer which is no longer needed as well. 
+We used to implement some black magic in `formMiddleware` to handle `redux-form` correctly. It is no longer necessary now that we migrated to `react-final-form`. Besides, `redux-form` required a reducer which is no longer needed as well.
 
 If you had your own custom Redux store, you can migrate it by following this diff:
 
@@ -405,12 +417,11 @@ If you were using Material-ui icons for your design, be aware that some icons pr
 
 Example:
 
-* `LightbulbOutline` is no more available in `@Material-ui/icons`
+-   `LightbulbOutline` is no more available in `@Material-ui/icons`
 
 But there is a quick fix for this one by using another package instead:
 
-* `import Lightbulb from '@material-ui/docs/svgIcons/LightbulbOutline';`
-
+-   `import Lightbulb from '@material-ui/docs/svgIcons/LightbulbOutline';`
 
 ## Custom Exporter Functions Must Use `jsonexport` Instead Of `papaparse`
 
@@ -443,7 +454,7 @@ const CommentList = props => (
     <List {...props} exporter={exportComments}>
         // ...
     </List>
-)
+);
 ```
 
 In react-admin v3, you can still pass an `exporter` function this way, but its signature has changed:
@@ -460,27 +471,25 @@ If you used `dispatch` to call the dataProvider using an action creator with a `
 As a base, here is the simplified `ExportButton` code:
 
 ```jsx
-import {
-    downloadCSV,
-    useDataProvider,
-    useNotify,
-} from 'react-admin';
+import { downloadCSV, useDataProvider, useNotify } from 'react-admin';
 import jsonExport from 'jsonexport/dist';
 
 const ExportButton = ({ sort, filter, maxResults = 1000, resource }) => {
     const dataProvider = useDataProvider();
     const notify = useNotify();
-    const payload = { sort, filter, pagination: { page: 1, perPage: maxResults }}
-    const handleClick = dataProvider.getList(resource, payload)
-        .then(({ data }) => jsonExport(data, (err, csv) => downloadCSV(csv, resource)))
+    const payload = {
+        sort,
+        filter,
+        pagination: { page: 1, perPage: maxResults },
+    };
+    const handleClick = dataProvider
+        .getList(resource, payload)
+        .then(({ data }) =>
+            jsonExport(data, (err, csv) => downloadCSV(csv, resource))
+        )
         .catch(error => notify('ra.notification.http_error', 'warning'));
 
-    return (
-        <Button
-            label="Export"
-            onClick={handleClick}
-        />
-    );
+    return <Button label="Export" onClick={handleClick} />;
 };
 ```
 
@@ -507,11 +516,11 @@ If you didn't access the `authProvider` context manually, you have nothing to ch
 
 Note that direct access to the `authProvider` from the context is discouraged (and not documented). If you need to interact with the `authProvider`, use the new auth hooks:
 
-- `useLogin`
-- `useLogout`
-- `useAuthenticated`
-- `useAuthState`
-- `usePermissions`
+-   `useLogin`
+-   `useLogout`
+-   `useAuthenticated`
+-   `useAuthState`
+-   `usePermissions`
 
 ## `authProvider` No Longer Receives `match` in Params
 
@@ -565,7 +574,7 @@ export default (type, params) => {
 
 When calling the `authProvider` for permissions (with the `AUTH_GET_PERMISSIONS` verb), react-admin used to include the `pathname` as second parameter. That allowed you to return different permissions based on the page. In a similar fashion, for the `AUTH_CHECK` call, the `params` argument contained the `resource` name, allowing different checks for different resources.
 
-We believe that authentication and permissions should not vary depending on where you are in the application ; it's up to components to decide to do something or not depending on permissions. So we've removed the default parameters from all the `authProvider` calls. 
+We believe that authentication and permissions should not vary depending on where you are in the application ; it's up to components to decide to do something or not depending on permissions. So we've removed the default parameters from all the `authProvider` calls.
 
 If you want to keep location-dependent authentication or permissions logic, read the current location from the `window` object directly in your `authProvider`, using `window.location.hash` (if you use a hash router), or using `window.location.pathname` (if you use a browser router):
 
@@ -583,7 +592,7 @@ export default (type, params) => {
     if (type === AUTH_GET_PERMISSIONS) {
 -       const { pathname } = params;
 +       const pathname = window.location.hash;
-        // pathname-dependent logic follows 
+        // pathname-dependent logic follows
         // ...
     }
     return Promise.reject('Unknown method');
@@ -594,17 +603,17 @@ export default (type, params) => {
 
 React-admin now uses hooks instead of sagas to handle authentication and authorization. That means that react-admin no longer dispatches the following actions:
 
-- `USER_LOGIN`
-- `USER_LOGIN_LOADING`
-- `USER_LOGIN_FAILURE`
-- `USER_LOGIN_SUCCESS`
-- `USER_CHECK`
-- `USER_CHECK_SUCCESS`
-- `USER_LOGOUT`
+-   `USER_LOGIN`
+-   `USER_LOGIN_LOADING`
+-   `USER_LOGIN_FAILURE`
+-   `USER_LOGIN_SUCCESS`
+-   `USER_CHECK`
+-   `USER_CHECK_SUCCESS`
+-   `USER_LOGOUT`
 
 If you have custom Login or Logout buttons dispatching these actions, they will still work, but you are encouraged to migrate to the hook equivalents (`useLogin` and `useLogout`).
 
-If you had custom reducer or sagas based on these actions, they will no longer work. You will have to reimplement that custom logic using the new authentication hooks. 
+If you had custom reducer or sagas based on these actions, they will no longer work. You will have to reimplement that custom logic using the new authentication hooks.
 
 **Tip**: If you need to clear the Redux state, you can dispatch the `CLEAR_STATE` action.
 
@@ -646,7 +655,7 @@ const i18nProvider = {
         })
     },
     getLocale: () => locale;
-} 
+}
 ```
 
 But don't worry: react-admin v3 contains a module called `ra-i18n-polyglot`, that is a wrapper around your old `i18nProvider` to make it compatible with the new provider signature:
@@ -679,7 +688,7 @@ export default App;
 
 ## The Translation Layer No Longer Uses Redux
 
-The previous implementation if the i18n layer used Redux and redux-saga. In react-admin 3.0, the translation utilities are implemented using a React context and a set of hooks. 
+The previous implementation if the i18n layer used Redux and redux-saga. In react-admin 3.0, the translation utilities are implemented using a React context and a set of hooks.
 
 If you didn't use translations, or if you passed your `i18nProvider` to the `<Admin>` component and used only one language, you have nothing to change. Your app will continue to work just as before. We encourage you to migrate from the `withTranslate` HOC to the `useTranslate` hook, but that's not compulsory.
 
@@ -706,7 +715,7 @@ import Button from '@material-ui/core/Button';
 -import { changeLocale } from 'react-admin';
 +import { useSetLocale } from 'react-admin';
 
--const localeSwitcher = ({ changeLocale }) => 
+-const localeSwitcher = ({ changeLocale }) =>
 +const LocaleSwitcher = () => {
 +   const setLocale = useSetLocale();
 -   const switchToFrench = () => changeLocale('fr');
@@ -804,7 +813,7 @@ export default withDataProvider(ApproveButton);
 
 ## Resource `context` Renamed to `intent`
 
-If you're using a Custom App, you had to render `<Resource>` components with the registration *context* prior to rendering your app routes. The `context` prop was renamed to `intent` because it conflicted with a prop injected by `react-redux`.
+If you're using a Custom App, you had to render `<Resource>` components with the registration _context_ prior to rendering your app routes. The `context` prop was renamed to `intent` because it conflicted with a prop injected by `react-redux`.
 
 ```diff
 -               <Resource name="posts" context="registration" />
@@ -913,13 +922,13 @@ const PostList = props => (
 
 Components deprecated in 2.X have been removed in 3.x. This includes:
 
-* `AppBarMobile` (use `AppBar` instead, which is responsive)
-* `Header` (use `Title` instead)
-* `ViewTitle` (use `Title` instead)
-* `RecordTitle` (use `TitleForRecord` instead)
-* `TitleDeprecated` (use `Title` instead)
-* `Headroom` (use `HideOnScroll` instead)
-* `LongTextInput` (use the `TextInput` instead)
+-   `AppBarMobile` (use `AppBar` instead, which is responsive)
+-   `Header` (use `Title` instead)
+-   `ViewTitle` (use `Title` instead)
+-   `RecordTitle` (use `TitleForRecord` instead)
+-   `TitleDeprecated` (use `Title` instead)
+-   `Headroom` (use `HideOnScroll` instead)
+-   `LongTextInput` (use the `TextInput` instead)
 
 ```diff
 - import { LongTextInput } from 'react-admin';
@@ -928,7 +937,7 @@ Components deprecated in 2.X have been removed in 3.x. This includes:
 + <TextInput multiline source="body" />
 ```
 
-* `BulkActions` (use the [`bulkActionButtons` prop](https://marmelab.com/react-admin/List.html#bulk-action-buttons) instead)
+-   `BulkActions` (use the [`bulkActionButtons` prop](https://marmelab.com/react-admin/List.html#bulk-action-buttons) instead)
 
 ```diff
 - const PostBulkActions = props => (
@@ -947,8 +956,8 @@ Components deprecated in 2.X have been removed in 3.x. This includes:
 + );
 
 export const PostList = (props) => (
-    <List 
-        {...props} 
+    <List
+        {...props}
 -       bulkActions={<PostBulkActions />}
 +       bulkActionButtons={<PostBulkActionButtons />}>
         ...
@@ -989,7 +998,10 @@ const theme = createMuiTheme({
 });
 
 const App = () => (
-    <Admin theme={theme} dataProvider={simpleRestProvider('http://path.to.my.api')}>
+    <Admin
+        theme={theme}
+        dataProvider={simpleRestProvider('http://path.to.my.api')}
+    >
         // ...
     </Admin>
 );
@@ -1050,7 +1062,7 @@ const Postedit = props =>
 
 ## Form Inputs Are Now `filled` And `dense` By Default
 
-To better match the [Material Design](https://material.io/components/text-fields/) specification, react-admin defaults to the *filled* variant for form inputs, and uses a *dense* margin to allow more compact forms. This will change the look and feel of existing forms built with `<SimpleForm>`, `<TabbedForm>`, and `<Filter>`. If you want your forms to look just like before, you need to set the `variant` and `margin` props as follows: 
+To better match the [Material Design](https://material.io/components/text-fields/) specification, react-admin defaults to the _filled_ variant for form inputs, and uses a _dense_ margin to allow more compact forms. This will change the look and feel of existing forms built with `<SimpleForm>`, `<TabbedForm>`, and `<Filter>`. If you want your forms to look just like before, you need to set the `variant` and `margin` props as follows:
 
 ```diff
 // for SimpleForm
@@ -1076,7 +1088,7 @@ const PostEdit = props =>
         </TabbedForm>
     </Edit>;
 // for Filter
-const PostFilter = props => 
+const PostFilter = props =>
 -   <Filter>
 +   <Filter variant="standard">
         // ...
@@ -1163,7 +1175,7 @@ We rewrote the `<AutocompleteInput>` and `<AutocompleteArrayInput>` components f
 
 There are three breaking changes in the new `<AutocompleteInput>` and `<AutocompleteArrayInput>` components:
 
-- The `inputValueMatcher` prop is gone. We removed a feature many found confusing: the auto-selection of an item when it was matched exactly. So react-admin no longer selects anything automatically, therefore the `inputValueMatcher` prop is obsolete.
+-   The `inputValueMatcher` prop is gone. We removed a feature many found confusing: the auto-selection of an item when it was matched exactly. So react-admin no longer selects anything automatically, therefore the `inputValueMatcher` prop is obsolete.
 
 ```diff
 <AutocompleteInput
@@ -1175,9 +1187,9 @@ There are three breaking changes in the new `<AutocompleteInput>` and `<Autocomp
 -   inputValueMatcher={() => null}
 />
 ```
- 
-- Specific [`react-autosuggest` props](https://github.com/moroshko/react-autosuggest#props) (like `onSuggestionsFetchRequested`, `theme`, or `highlightFirstSuggestion`) are no longer supported, because the component now passes extra props to a `<Downshift>` component.
- 
+
+-   Specific [`react-autosuggest` props](https://github.com/moroshko/react-autosuggest#props) (like `onSuggestionsFetchRequested`, `theme`, or `highlightFirstSuggestion`) are no longer supported, because the component now passes extra props to a `<Downshift>` component.
+
 ```diff
 <AutocompleteInput
     source="role"
@@ -1189,7 +1201,7 @@ There are three breaking changes in the new `<AutocompleteInput>` and `<Autocomp
 />
 ```
 
-- The `suggestionComponent` prop is gone.
+-   The `suggestionComponent` prop is gone.
 
 Instead, the new `<AutocompleteInput>` and `<AutocompleteArrayInput>` components use the `optionText` prop, like all other inputs accepting choices. However, if you pass a React element as the `optionText`, you must now also specify the new `matchSuggestion` prop. This is required because the inputs use the `optionText` by default to filter suggestions. This function receives the current filter and a choice, and should return a boolean indicating whether this choice matches the filter.
 
@@ -1208,11 +1220,11 @@ Instead, the new `<AutocompleteInput>` and `<AutocompleteArrayInput>` components
 +   matchSuggestion={matchSuggestion}
 />
 ```
- 
+
 Besides, some props which were applicable to both components did not make sense for the `<AutocompleteArrayInput>` component:
 
-- `allowEmpty`: As the `<AutocompleteArrayInput>` deals with arrays, it does not make sense to add an empty choice. This prop is no longer accepted and will be ignored.
-- `limitChoicesToValue`: As the `<AutocompleteArrayInput>` deals with arrays and only accepts unique items, it does not make sense to show only the already selected items. This prop is no longer accepted and will be ignored.
+-   `allowEmpty`: As the `<AutocompleteArrayInput>` deals with arrays, it does not make sense to add an empty choice. This prop is no longer accepted and will be ignored.
+-   `limitChoicesToValue`: As the `<AutocompleteArrayInput>` deals with arrays and only accepts unique items, it does not make sense to show only the already selected items. This prop is no longer accepted and will be ignored.
 
 ```diff
 <AutocompleteArrayInput
