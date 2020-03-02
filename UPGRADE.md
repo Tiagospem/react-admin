@@ -112,9 +112,6 @@ The migration to `react-final-form` changes their signature and behavior to the 
 -   `handleSubmit`: accepts no arguments, and will submit the form with its current values immediately
 -   `handleSubmitWithRedirect` accepts a custom redirect, and will submit the form with its current values immediately
 
-Attention, react-final-form doesn't split form validation and form submission.
-If you want `handleSubmit` and `handleSubmitWithRedirect`
-
 Here's how to migrate the _Altering the Form Values before Submitting_ example from the documentation, in two variants:
 
 1. Using the `react-final-form` hook API to send change events
@@ -153,6 +150,11 @@ const SaveWithNoteButton = ({
 ```
 
 2. Using react-admin hooks to run custom mutations
+
+Caution, react-final-form doesn't split form validation and form submission.
+If you want to overload the submission but to keep the validation, don't use `handleSubmit` or `handleSubmitWithRedirect` but use instead `onSave`.
+
+-   `onSave` have two props, the form values to save and the redirection to perform.
 
 For instance, in the `simple` example:
 
