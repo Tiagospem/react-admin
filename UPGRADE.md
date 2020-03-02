@@ -112,6 +112,11 @@ The migration to `react-final-form` changes their signature and behavior to the 
 -   `handleSubmit`: accepts no arguments, and will submit the form with its current values immediately
 -   `handleSubmitWithRedirect` accepts a custom redirect, and will submit the form with its current values immediately
 
+They both runs both validation and submission. So if you overload them, you will have to perform the validation manually.
+To simplify this, if you want to overload the submission but to keep the validation, don't overload `handleSubmit` or `handleSubmitWithRedirect` but use instead `onSave`.
+
+-   `onSave` have two props, the form values to save and the redirection to perform.
+
 Here's how to migrate the _Altering the Form Values before Submitting_ example from the documentation, in two variants:
 
 1. Using the `react-final-form` hook API to send change events
@@ -151,12 +156,50 @@ const SaveWithNoteButton = ({
 
 2. Using react-admin hooks to run custom mutations
 
-Caution, react-final-form doesn't split form validation and form submission.
-If you want to overload the submission but to keep the validation, don't use `handleSubmit` or `handleSubmitWithRedirect` but use instead `onSave`.
-
--   `onSave` have two props, the form values to save and the redirection to perform.
-
 For instance, in the `simple` example:
+
+```jsx
+import React, { useCallback } from 'react';
+import {
+    SaveButton,
+    Toolbar,
+    useCreate,
+    useRedirect,
+    useNotify,
+} from 'react-admin';
+
+const SaveWithNoteButton = props => {
+    const [create] = useCreate('posts');
+    const redirectTo = useRedirect();
+    const notify = useNotify();
+    const { basePath } = props;
+
+    const handleSave = useCallback(
+        (values, redirect) => {
+            create(
+                {
+                    payload: {
+                        data: { values, average_note: 10 },
+                    },
+                },
+                {
+                    onSuccess: ({ data: newRecord }) => {
+                        notify('ra.notification.created', 'info', {
+                            smart_count: 1,
+                        });
+                        redirectTo(redirect, basePath, newRecord.id, newRecord);
+                    },
+                }
+            );
+        },
+        [create, notify, redirectTo, basePath]
+    );
+
+    return <SaveButton {...props} onSave={handleSave} />;
+};
+```
+
+`onSave` can also be used to perform custom call in your data provider without breaking the formalidation.
 
 ```jsx
 import React, { useCallback } from 'react';

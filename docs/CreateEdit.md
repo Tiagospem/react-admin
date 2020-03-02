@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "The Create and Edit Views"
+title: 'The Create and Edit Views'
 ---
 
 # The Create and Edit Views
@@ -17,16 +17,17 @@ The `<Create>` and `<Edit>` components render the page title and actions, and fe
 
 Here are all the props accepted by the `<Create>` and `<Edit>` components:
 
-* [`title`](#page-title)
-* [`actions`](#actions)
-* [`aside`](#aside-component)
-* [`successMessage`](#success-message)
-* [`component](#component)
-* [`undoable`](#undoable) (`<Edit>` only)
+-   [`title`](#page-title)
+-   [`actions`](#actions)
+-   [`aside`](#aside-component)
+-   [`successMessage`](#success-message)
+-   [`component](#component)
+-   [`undoable`](#undoable) (`<Edit>` only)
 
 Here is the minimal code necessary to display a form to create and edit comments:
 
 {% raw %}
+
 ```jsx
 // in src/App.js
 import React from 'react';
@@ -36,7 +37,9 @@ import jsonServerProvider from 'ra-data-json-server';
 import { PostCreate, PostEdit } from './posts';
 
 const App = () => (
-    <Admin dataProvider={jsonServerProvider('http://jsonplaceholder.typicode.com')}>
+    <Admin
+        dataProvider={jsonServerProvider('http://jsonplaceholder.typicode.com')}
+    >
         <Resource name="posts" create={PostCreate} edit={PostEdit} />
     </Admin>
 );
@@ -45,21 +48,36 @@ export default App;
 
 // in src/posts.js
 import React from 'react';
-import { Create, Edit, SimpleForm, TextInput, DateInput, ReferenceManyField, Datagrid, TextField, DateField, EditButton } from 'react-admin';
+import {
+    Create,
+    Edit,
+    SimpleForm,
+    TextInput,
+    DateInput,
+    ReferenceManyField,
+    Datagrid,
+    TextField,
+    DateField,
+    EditButton,
+} from 'react-admin';
 import RichTextInput from 'ra-input-rich-text';
 
-export const PostCreate = (props) => (
+export const PostCreate = props => (
     <Create {...props}>
         <SimpleForm>
             <TextInput source="title" />
             <TextInput source="teaser" options={{ multiLine: true }} />
             <RichTextInput source="body" />
-            <DateInput label="Publication date" source="published_at" defaultValue={new Date()} />
+            <DateInput
+                label="Publication date"
+                source="published_at"
+                defaultValue={new Date()}
+            />
         </SimpleForm>
     </Create>
 );
 
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit {...props}>
         <SimpleForm>
             <TextInput disabled label="Id" source="id" />
@@ -67,7 +85,11 @@ export const PostEdit = (props) => (
             <TextInput multiline source="teaser" validate={required()} />
             <RichTextInput source="body" validate={required()} />
             <DateInput label="Publication date" source="published_at" />
-            <ReferenceManyField label="Comments" reference="comments" target="post_id">
+            <ReferenceManyField
+                label="Comments"
+                reference="comments"
+                target="post_id"
+            >
                 <Datagrid>
                     <TextField source="body" />
                     <DateField source="created_at" />
@@ -78,6 +100,7 @@ export const PostEdit = (props) => (
     </Edit>
 );
 ```
+
 {% endraw %}
 
 That's enough to display the post edit form:
@@ -86,7 +109,7 @@ That's enough to display the post edit form:
 
 **Tip**: You might find it cumbersome to repeat the same input components for both the `<Create>` and the `<Edit>` view. In practice, these two views almost never have exactly the same form inputs. For instance, in the previous snippet, the `<Edit>` views shows related comments to the current post, which makes no sense for a new post. Having two separate sets of input components for the two views is therefore a deliberate choice. However, if you have the same set of input components, export them as a custom Form component to avoid repetition.
 
- `<Create>` accepts a `record` prop, to initialize the form based on an value object.
+`<Create>` accepts a `record` prop, to initialize the form based on an value object.
 
 ### Page Title
 
@@ -95,7 +118,7 @@ By default, the title for the Create view is "Create [resource_name]", and the t
 You can customize this title by specifying a custom `title` prop:
 
 ```jsx
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit title="Post edition" {...props}>
         ...
     </Edit>
@@ -108,7 +131,7 @@ More interestingly, you can pass an element as `title`. React-admin clones this 
 const PostTitle = ({ record }) => {
     return <span>Post {record ? `"${record.title}"` : ''}</span>;
 };
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit title={<PostTitle />} {...props}>
         ...
     </Edit>
@@ -128,11 +151,13 @@ const PostEditActions = ({ basePath, data, resource }) => (
     <TopToolbar>
         <ShowButton basePath={basePath} record={data} />
         {/* Add your custom actions */}
-        <Button color="primary" onClick={customAction}>Custom Action</Button>
+        <Button color="primary" onClick={customAction}>
+            Custom Action
+        </Button>
     </TopToolbar>
 );
 
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit actions={<PostEditActions />} {...props}>
         ...
     </Edit>
@@ -144,6 +169,7 @@ export const PostEdit = (props) => (
 You may want to display additional information on the side of the form. Use the `aside` prop for that, passing the component of your choice:
 
 {% raw %}
+
 ```jsx
 const Aside = () => (
     <div style={{ width: 200, margin: '1em' }}>
@@ -159,11 +185,13 @@ const PostEdit = props => (
         ...
     </Edit>
 ```
+
 {% endraw %}
 
 The `aside` component receives the same props as the `Edit` or `Create` child component: `basePath`, `record`, `resource`, and `version`. That means you can display non-editable details of the current record in the aside component:
 
 {% raw %}
+
 ```jsx
 const Aside = ({ record }) => (
     <div style={{ width: 200, margin: '1em' }}>
@@ -176,6 +204,7 @@ const Aside = ({ record }) => (
     </div>
 );
 ```
+
 {% endraw %}
 
 **Tip**: Always test that the `record` is defined before using it, as react-admin starts rendering the UI before the API call is over.
@@ -207,7 +236,7 @@ const PostEdit = props => (
     </Edit>
 );
 
-// use a custom component as root component 
+// use a custom component as root component
 const PostEdit = props => (
     <Edit component={MyComponent} {...props}>
         ...
@@ -259,9 +288,7 @@ const CustomToolbar = props => (
 
 const PostEdit = props => (
     <Edit {...props}>
-        <SimpleForm toolbar={<CustomToolbar />}>
-            ...
-        </SimpleForm>
+        <SimpleForm toolbar={<CustomToolbar />}>...</SimpleForm>
     </Edit>
 );
 ```
@@ -286,15 +313,16 @@ const PostList = props => (
 );
 ```
 
-Alternately, you may need to prepopulate a record based on a *related* record. For instance, in a `PostList` component, you may want to display a button to create a comment related to the current post. Clicking on that button would lead to a `CommentCreate` page where the `post_id` is preset to the id of the Post.
+Alternately, you may need to prepopulate a record based on a _related_ record. For instance, in a `PostList` component, you may want to display a button to create a comment related to the current post. Clicking on that button would lead to a `CommentCreate` page where the `post_id` is preset to the id of the Post.
 
-**Note**  `<CloneButton>` is designed to be used in an edit view `<Actions>` component, not inside a `<Toolbar>`. The `Toolbar` is basically for submitting the form, not for going to another resource.
+**Note** `<CloneButton>` is designed to be used in an edit view `<Actions>` component, not inside a `<Toolbar>`. The `Toolbar` is basically for submitting the form, not for going to another resource.
 
 By default, the `<Create>` view starts with an empty `record`. However, if the `location` object (injected by [react-router-dom](https://reacttraining.com/react-router/web/api/location)) contains a `record` in its `state`, the `<Create>` view uses that `record` instead of the empty object. That's how the `<CloneButton>` works behind the hood.
 
-That means that if you want to create a link to a creation form, presetting *some* values, all you have to do is to set the location `state`. `react-router-dom` provides the `<Link>` component for that:
+That means that if you want to create a link to a creation form, presetting _some_ values, all you have to do is to set the location `state`. `react-router-dom` provides the `<Link>` component for that:
 
 {% raw %}
+
 ```jsx
 import React from 'react';
 import { Datagrid } from 'react-admin';
@@ -313,15 +341,16 @@ const CreateRelatedCommentButton = ({ record }) => (
     </Button>
 );
 
-export default PostList = props => (
+export default (PostList = props => (
     <List {...props}>
         <Datagrid>
             ...
             <CreateRelatedCommentButton />
         </Datagrid>
     </List>
-)
+));
 ```
+
 {% endraw %}
 
 **Tip**: To style the button with the main color from the material-ui theme, use the `Link` component from the `react-admin` package rather than the one from `react-router-dom`.
@@ -329,6 +358,7 @@ export default PostList = props => (
 **Tip**: The `<Create>` component also watches the "source" parameter of `location.search` (the query string in the URL) in addition to `location.state` (a cross-page message hidden in the router memory). So the `CreateRelatedCommentButton` could also be written as:
 
 {% raw %}
+
 ```jsx
 import React from 'react';
 import Button from '@material-ui/core/Button';
@@ -346,6 +376,7 @@ const CreateRelatedCommentButton = ({ record }) => (
     </Button>
 );
 ```
+
 {% endraw %}
 
 ## The `<EditGuesser>` component
@@ -359,7 +390,9 @@ import { Admin, Resource, EditGuesser } from 'react-admin';
 import jsonServerProvider from 'ra-data-json-server';
 
 const App = () => (
-    <Admin dataProvider={jsonServerProvider('http://jsonplaceholder.typicode.com')}>
+    <Admin
+        dataProvider={jsonServerProvider('http://jsonplaceholder.typicode.com')}
+    >
         <Resource name="posts" edit={EditGuesser} />
     </Admin>
 );
@@ -386,16 +419,16 @@ to change this behaviour you can pass `false` for the `submitOnEnter` property, 
 
 Here are all the props you can set on the `<SimpleForm>` component:
 
-* [`initialValues`](#default-values)
-* [`validate`](#validation)
-* [`submitOnEnter`](#submit-on-enter)
-* [`redirect`](#redirection-after-submission)
-* [`toolbar`](#toolbar)
-* [`variant`](#variant)
-* [`margin`](#margin)
+-   [`initialValues`](#default-values)
+-   [`validate`](#validation)
+-   [`submitOnEnter`](#submit-on-enter)
+-   [`redirect`](#redirection-after-submission)
+-   [`toolbar`](#toolbar)
+-   [`variant`](#variant)
+-   [`margin`](#margin)
 
 ```jsx
-export const PostCreate = (props) => (
+export const PostCreate = props => (
     <Create {...props}>
         <SimpleForm>
             <TextInput source="title" />
@@ -408,8 +441,8 @@ export const PostCreate = (props) => (
 
 **Tip**: `Create` and `Edit` inject more props to their child. So `SimpleForm` also expects these props to be set (but you shouldn't set them yourself):
 
-* `save`: The function invoked when the form is submitted.
-* `saving`: A boolean indicating whether a save operation is ongoing.
+-   `save`: The function invoked when the form is submitted.
+-   `saving`: A boolean indicating whether a save operation is ongoing.
 
 ## The `<TabbedForm>` component
 
@@ -422,17 +455,18 @@ to change this behaviour you can pass `false` for the `submitOnEnter` property.
 
 Here are all the props accepted by the `<TabbedForm>` component:
 
-* [`initialValues`](#default-values)
-* [`validate`](#validation)
-* [`submitOnEnter`](#submit-on-enter)
-* [`redirect`](#redirection-after-submission)
-* [`toolbar`](#toolbar)
-* [`variant`](#variant)
-* [`margin`](#margin)
-* `save`: The function invoked when the form is submitted. This is passed automatically by `react-admin` when the form component is used inside `Create` and `Edit` components.
-* `saving`: A boolean indicating whether a save operation is ongoing. This is passed automatically by `react-admin` when the form component is used inside `Create` and `Edit` components.
+-   [`initialValues`](#default-values)
+-   [`validate`](#validation)
+-   [`submitOnEnter`](#submit-on-enter)
+-   [`redirect`](#redirection-after-submission)
+-   [`toolbar`](#toolbar)
+-   [`variant`](#variant)
+-   [`margin`](#margin)
+-   `save`: The function invoked when the form is submitted. This is passed automatically by `react-admin` when the form component is used inside `Create` and `Edit` components.
+-   `saving`: A boolean indicating whether a save operation is ongoing. This is passed automatically by `react-admin` when the form component is used inside `Create` and `Edit` components.
 
 {% raw %}
+
 ```jsx
 import React from 'react';
 import {
@@ -444,13 +478,13 @@ import {
     DateField,
     TextInput,
     ReferenceManyField,
-    NumberInput,    
+    NumberInput,
     DateInput,
     BooleanInput,
-    EditButton
+    EditButton,
 } from 'react-admin';
 
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit {...props}>
         <TabbedForm>
             <FormTab label="summary">
@@ -459,17 +493,36 @@ export const PostEdit = (props) => (
                 <TextInput multiline source="teaser" validate={required()} />
             </FormTab>
             <FormTab label="body">
-                <RichTextInput source="body" validate={required()} addLabel={false} />
+                <RichTextInput
+                    source="body"
+                    validate={required()}
+                    addLabel={false}
+                />
             </FormTab>
             <FormTab label="Miscellaneous">
-                <TextInput label="Password (if protected post)" source="password" type="password" />
+                <TextInput
+                    label="Password (if protected post)"
+                    source="password"
+                    type="password"
+                />
                 <DateInput label="Publication date" source="published_at" />
-                <NumberInput source="average_note" validate={[ number(), minValue(0) ]} />
-                <BooleanInput label="Allow comments?" source="commentable" defaultValue />
+                <NumberInput
+                    source="average_note"
+                    validate={[number(), minValue(0)]}
+                />
+                <BooleanInput
+                    label="Allow comments?"
+                    source="commentable"
+                    defaultValue
+                />
                 <TextInput disabled label="Nb views" source="views" />
             </FormTab>
             <FormTab label="comments">
-                <ReferenceManyField reference="comments" target="post_id" addLabel={false}>
+                <ReferenceManyField
+                    reference="comments"
+                    target="post_id"
+                    addLabel={false}
+                >
                     <Datagrid>
                         <TextField source="body" />
                         <DateField source="created_at" />
@@ -481,12 +534,13 @@ export const PostEdit = (props) => (
     </Edit>
 );
 ```
+
 {% endraw %}
 
 To style the tabs, the `<FormTab>` component accepts two props:
 
-- `className` is passed to the tab *header*
-- `contentClassName` is passed to the tab *content*
+-   `className` is passed to the tab _header_
+-   `contentClassName` is passed to the tab _content_
 
 ### TabbedFormTabs
 
@@ -496,17 +550,11 @@ The following example shows how to make use of scrollable `<Tabs>`. Pass the `sc
 
 ```jsx
 import React from 'react';
-import {
-    Edit,
-    TabbedForm,
-    TabbedFormTabs,
-} from 'react-admin';
+import { Edit, TabbedForm, TabbedFormTabs } from 'react-admin';
 
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit {...props}>
-        <TabbedForm tabs={<TabbedFormTabs scrollable={true} />}>
-            ...
-        </TabbedForm>
+        <TabbedForm tabs={<TabbedFormTabs scrollable={true} />}>...</TabbedForm>
     </Edit>
 );
 ```
@@ -523,7 +571,7 @@ The value of the form `initialValues` prop is an object, or a function returning
 
 ```jsx
 const postDefaultValue = { created_at: new Date(), nb_views: 0 };
-export const PostCreate = (props) => (
+export const PostCreate = props => (
     <Create {...props}>
         <SimpleForm initialValues={postDefaultValue}>
             <TextInput source="title" />
@@ -538,13 +586,13 @@ export const PostCreate = (props) => (
 
 ### Per Input Default Value
 
-Alternatively, you can specify a `defaultValue` prop directly in `<Input>` components. Default value can be a scalar, or a function returning a scalar.  React-admin will merge the input default values with the form default value (input > form):
+Alternatively, you can specify a `defaultValue` prop directly in `<Input>` components. Default value can be a scalar, or a function returning a scalar. React-admin will merge the input default values with the form default value (input > form):
 
 ```jsx
-export const PostCreate = (props) => (
+export const PostCreate = props => (
     <Create {...props}>
         <SimpleForm>
-            <TextInput disabled source="id" defaultValue={() => uuid()}/>
+            <TextInput disabled source="id" defaultValue={() => uuid()} />
             <TextInput source="title" />
             <RichTextInput source="body" />
             <NumberInput source="nb_views" defaultValue={0} />
@@ -564,7 +612,7 @@ To validate values submitted by a form, you can add a `validate` prop to the for
 The value of the form `validate` prop must be a function taking the record as input, and returning an object with error messages indexed by field. For instance:
 
 ```jsx
-const validateUserCreation = (values) => {
+const validateUserCreation = values => {
     const errors = {};
     if (!values.firstName) {
         errors.firstName = ['The firstName is required'];
@@ -574,10 +622,10 @@ const validateUserCreation = (values) => {
     } else if (values.age < 18) {
         errors.age = ['Must be over 18'];
     }
-    return errors
+    return errors;
 };
 
-export const UserCreate = (props) => (
+export const UserCreate = props => (
     <Create {...props}>
         <SimpleForm validate={validateUserCreation}>
             <TextInput label="First Name" source="firstName" />
@@ -593,15 +641,15 @@ export const UserCreate = (props) => (
 
 Alternatively, you can specify a `validate` prop directly in `<Input>` components, taking either a function, or an array of functions. React-admin already bundles a few validator functions, that you can just require, and use as input-level validators:
 
-* `required(message)` if the field is mandatory,
-* `minValue(min, message)` to specify a minimum value for integers,
-* `maxValue(max, message)` to specify a maximum value for integers,
-* `minLength(min, message)` to specify a minimum length for strings,
-* `maxLength(max, message)` to specify a maximum length for strings,
-* `number(message)` to check that the input is a valid number,
-* `email(message)` to check that the input is a valid email address,
-* `regex(pattern, message)` to validate that the input matches a regex,
-* `choices(list, message)` to validate that the input is within a given list,
+-   `required(message)` if the field is mandatory,
+-   `minValue(min, message)` to specify a minimum value for integers,
+-   `maxValue(max, message)` to specify a maximum value for integers,
+-   `minLength(min, message)` to specify a minimum length for strings,
+-   `maxLength(max, message)` to specify a maximum length for strings,
+-   `number(message)` to check that the input is a valid number,
+-   `email(message)` to check that the input is a valid email address,
+-   `regex(pattern, message)` to validate that the input matches a regex,
+-   `choices(list, message)` to validate that the input is within a given list,
 
 Example usage:
 
@@ -615,7 +663,7 @@ import {
     number,
     regex,
     email,
-    choices
+    choices,
 } from 'react-admin';
 
 const validateFirstName = [required(), minLength(2), maxLength(15)];
@@ -624,17 +672,30 @@ const validateAge = [number(), minValue(18)];
 const validateZipCode = regex(/^\d{5}$/, 'Must be a valid Zip Code');
 const validateSex = choices(['m', 'f'], 'Must be Male or Female');
 
-export const UserCreate = (props) => (
+export const UserCreate = props => (
     <Create {...props}>
         <SimpleForm>
-            <TextInput label="First Name" source="firstName" validate={validateFirstName} />
+            <TextInput
+                label="First Name"
+                source="firstName"
+                validate={validateFirstName}
+            />
             <TextInput label="Email" source="email" validate={validateEmail} />
-            <TextInput label="Age" source="age" validate={validateAge}/>
-            <TextInput label="Zip Code" source="zip" validate={validateZipCode}/>
-            <SelectInput label="Sex" source="sex" choices={[
-                { id: 'm', name: 'Male' },
-                { id: 'f', name: 'Female' },
-            ]} validate={validateSex}/>
+            <TextInput label="Age" source="age" validate={validateAge} />
+            <TextInput
+                label="Zip Code"
+                source="zip"
+                validate={validateZipCode}
+            />
+            <SelectInput
+                label="Sex"
+                source="sex"
+                choices={[
+                    { id: 'm', name: 'Male' },
+                    { id: 'f', name: 'Female' },
+                ]}
+                validate={validateSex}
+            />
         </SimpleForm>
     </Create>
 );
@@ -651,16 +712,15 @@ const validateEmail = email(message);
 
 You can also define your own validator functions. These functions should return `undefined` when there is no error, or an error string.
 
-
 ```jsx
-const required = (message = 'Required') =>
-    value => value ? undefined : message;
-const maxLength = (max, message = 'Too short') =>
-    value => value && value.length > max ? message : undefined;
-const number = (message = 'Must be a number') =>
-    value => value && isNaN(Number(value)) ? message : undefined;
-const minValue = (min, message = 'Too small') =>
-    value => value && value < min ? message : undefined;
+const required = (message = 'Required') => value =>
+    value ? undefined : message;
+const maxLength = (max, message = 'Too short') => value =>
+    value && value.length > max ? message : undefined;
+const number = (message = 'Must be a number') => value =>
+    value && isNaN(Number(value)) ? message : undefined;
+const minValue = (min, message = 'Too small') => value =>
+    value && value < min ? message : undefined;
 
 const ageValidation = (value, allValues) => {
     if (!value) {
@@ -675,11 +735,15 @@ const ageValidation = (value, allValues) => {
 const validateFirstName = [required(), maxLength(15)];
 const validateAge = [required(), number(), ageValidation];
 
-export const UserCreate = (props) => (
+export const UserCreate = props => (
     <Create {...props}>
         <SimpleForm>
-            <TextInput label="First Name" source="firstName" validate={validateFirstName} />
-            <TextInput label="Age" source="age" validate={validateAge}/>
+            <TextInput
+                label="First Name"
+                source="firstName"
+                validate={validateFirstName}
+            />
+            <TextInput label="Age" source="age" validate={validateAge} />
         </SimpleForm>
     </Create>
 );
@@ -689,30 +753,28 @@ React-admin will combine all the input-level functions into a single function lo
 
 Input validation functions receive the current field value, and the values of all fields of the current record. This allows for complex validation scenarios (e.g. validate that two passwords are the same).
 
-**Tip**: If your admin has multi-language support, validator functions should return message *identifiers* rather than messages themselves. React-admin automatically passes these identifiers to the translation function: 
+**Tip**: If your admin has multi-language support, validator functions should return message _identifiers_ rather than messages themselves. React-admin automatically passes these identifiers to the translation function:
 
 ```jsx
 // in validators/required.js
 const required = () => (value, allValues, props) =>
-    value
-        ? undefined
-        : 'myroot.validation.required';
+    value ? undefined : 'myroot.validation.required';
 
 // in i18n/en.json
 export default {
     myroot: {
         validation: {
             required: 'Required field',
-        }
-    }
-}
+        },
+    },
+};
 ```
 
 If the translation depends on a variable, the validator can return an object rather than a translation identifier:
 
 ```jsx
 // in validators/minLength.js
-const minLength = (min) => (value, allValues, props) => 
+const minLength = min => (value, allValues, props) =>
     value.length >= min
         ? undefined
         : { message: 'myroot.validation.minLength', args: { min } };
@@ -722,9 +784,9 @@ export default {
     myroot: {
         validation: {
             minLength: 'Must be %{min} characters at least',
-        }
-    }
-}
+        },
+    },
+};
 ```
 
 See the [Translation documentation](Translation.md#translation-messages) for details.
@@ -732,6 +794,7 @@ See the [Translation documentation](Translation.md#translation-messages) for det
 **Tip**: Make sure to define validation functions or array of functions in a variable, instead of defining them directly in JSX. This can result in a new function or array at every render, and trigger infinite rerender.
 
 {% raw %}
+
 ```jsx
 const validateStock = [required(), number(), minValue(0)];
 
@@ -742,28 +805,30 @@ export const ProductEdit = ({ ...props }) => (
             {/* do this */}
             <NumberInput source="stock" validate={validateStock} />
             {/* don't do that */}
-            <NumberInput source="stock" validate={[required(), number(), minValue(0)]} />
+            <NumberInput
+                source="stock"
+                validate={[required(), number(), minValue(0)]}
+            />
             ...
         </SimpleForm>
     </Edit>
 );
 ```
+
 {% endraw %}
 
 **Tip**: The props of your Input components are passed to a `react-final-form` `<Field>` component.
 
-**Tip**: You can use *both* Form validation and input validation.
+**Tip**: You can use _both_ Form validation and input validation.
 
 ## Submit On Enter
 
 By default, pressing `ENTER` in any of the form fields submits the form - this is the expected behavior in most cases. However, some of your custom input components (e.g. Google Maps widget) may have special handlers for the `ENTER` key. In that case, to disable the automated form submission on enter, set the `submitOnEnter` prop of the form component to `false`:
 
 ```jsx
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit {...props}>
-        <SimpleForm submitOnEnter={false}>
-            ...
-        </SimpleForm>
+        <SimpleForm submitOnEnter={false}>...</SimpleForm>
     </Edit>
 );
 ```
@@ -772,17 +837,15 @@ export const PostEdit = (props) => (
 
 By default:
 
-- Submitting the form in the `<Create>` view redirects to the `<Edit>` view
-- Submitting the form in the `<Edit>` view redirects to the `<List>` view
+-   Submitting the form in the `<Create>` view redirects to the `<Edit>` view
+-   Submitting the form in the `<Edit>` view redirects to the `<List>` view
 
 You can customize the redirection by setting the `redirect` prop of the form component. Possible values are "edit", "show", "list", and `false` to disable redirection. You may also specify a custom path such as `/my-custom-route`. For instance, to redirect to the `<Show>` view after edition:
 
 ```jsx
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit {...props}>
-        <SimpleForm redirect="show">
-            ...
-        </SimpleForm>
+        <SimpleForm redirect="show">...</SimpleForm>
     </Edit>
 );
 ```
@@ -810,8 +873,8 @@ At the bottom of the form, the toolbar displays the submit button. You can overr
 
 The most common use case is to display two submit buttons in the `<Create>` view:
 
-- one that creates and redirects to the `<Show>` view of the new resource, and
-- one that redirects to a blank `<Create>` view after creation (allowing bulk creation)
+-   one that creates and redirects to the `<Show>` view of the new resource, and
+-   one that redirects to a blank `<Create>` view after creation (allowing bulk creation)
 
 ![Form toolbar](./img/form-toolbar.png)
 
@@ -822,7 +885,7 @@ import React from 'react';
 import { Create, SimpleForm, SaveButton, Toolbar } from 'react-admin';
 
 const PostCreateToolbar = props => (
-    <Toolbar {...props} >
+    <Toolbar {...props}>
         <SaveButton
             label="post.action.save_and_show"
             redirect="show"
@@ -837,7 +900,7 @@ const PostCreateToolbar = props => (
     </Toolbar>
 );
 
-export const PostCreate = (props) => (
+export const PostCreate = props => (
     <Create {...props}>
         <SimpleForm toolbar={<PostCreateToolbar />} redirect="show">
             ...
@@ -853,29 +916,27 @@ import React from 'react';
 import { Edit, SimpleForm, SaveButton, Toolbar } from 'react-admin';
 
 const PostEditToolbar = props => (
-    <Toolbar {...props} >
+    <Toolbar {...props}>
         <SaveButton />
     </Toolbar>
 );
 
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit {...props}>
-        <SimpleForm toolbar={<PostEditToolbar />}>
-            ...
-        </SimpleForm>
+        <SimpleForm toolbar={<PostEditToolbar />}>...</SimpleForm>
     </Edit>
 );
 ```
 
 Here are the props received by the `Toolbar` component when passed as the `toolbar` prop of the `SimpleForm` or `TabbedForm` components:
 
-* `handleSubmitWithRedirect`: The function to call in order to submit the form. It accepts a single parameter overriding the form's default redirect.
-* `handleSubmit` which is the same prop as in [`react-final-form`](https://github.com/final-form/react-final-form#handlesubmit-syntheticeventhtmlformelement--promiseobject)
-* `invalid`: A boolean indicating whether the form is invalid
-* `pristine`: A boolean indicating whether the form is pristine (eg: no inputs have been changed yet)
-* `redirect`: The default form's redirect
-* `saving`: A boolean indicating whether a save operation is ongoing.
-* `submitOnEnter`: A boolean indicating whether the form should be submitted when pressing `enter`
+-   `handleSubmitWithRedirect`: The function to call in order to submit the form. It accepts a single parameter overriding the form's default redirect.
+-   `handleSubmit` which is the same prop as in [`react-final-form`](https://github.com/final-form/react-final-form#handlesubmit-syntheticeventhtmlformelement--promiseobject)
+-   `invalid`: A boolean indicating whether the form is invalid
+-   `pristine`: A boolean indicating whether the form is pristine (eg: no inputs have been changed yet)
+-   `redirect`: The default form's redirect
+-   `saving`: A boolean indicating whether a save operation is ongoing.
+-   `submitOnEnter`: A boolean indicating whether the form should be submitted when pressing `enter`
 
 **Tip**: Use react-admin's `<Toolbar>` component instead of material-ui's `<Toolbar>` component. The former builds up on the latter, and adds support for an alternative mobile layout (and is therefore responsive).
 
@@ -887,33 +948,31 @@ Here are the props received by the `Toolbar` component when passed as the `toolb
 
 You can customize each row in a `<SimpleForm>` or in a `<TabbedForm>` by passing props to the Input components:
 
-* `className`
-* [`variant`](#variant)
-* [`margin`](#margin)
-* [`formClassName`](#formclassname)
-* [`fullWidth`](#fullwidth)
+-   `className`
+-   [`variant`](#variant)
+-   [`margin`](#margin)
+-   [`formClassName`](#formclassname)
+-   [`fullWidth`](#fullwidth)
 
 You can find more about these props in [the Input documentation](./Inputs.md#common-input-props).
 
-You can also [wrap inputs inside containers](#custom-row-container), or [create a custom Form component](#custom-form-component), alternative to `<SimpleForm>` or `<TabbedForm>`. 
+You can also [wrap inputs inside containers](#custom-row-container), or [create a custom Form component](#custom-form-component), alternative to `<SimpleForm>` or `<TabbedForm>`.
 
 ### Variant
 
 By default, react-admin input components use the Material Design "filled" variant. If you want to use the "standard" or "outlined" variants, you can either set the `variant` prop on each Input component individually, or set the `variant` prop directly on the Form component. In that case, the Form component will transmit the `variant` to each Input.
 
 ```jsx
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit {...props}>
-        <SimpleForm variant="standard">
-            ...
-        </SimpleForm>
+        <SimpleForm variant="standard">...</SimpleForm>
     </Edit>
 );
 ```
 
 **Tip**: If your form contains not only Inputs but also Fields, the injection of the `variant` property to the form children will cause a React warning. You'll need to wrap every Field component in another component to ignore the injected `variant` prop, as follows:
 
-```diff
+````diff
 +const TextFieldInForm = ({ variant, ...props }) => <TextField {...props} />;
 +TextFieldInForm.defaultProps = TextField.defaultProps;
 
@@ -926,18 +985,16 @@ export const PostEdit = (props) => (
         </SimpleForm>
     </Edit>
 );
-```
+````
 
 ### Margin
 
 By default, react-admin input components use the Material Design "dense" margin. If you want to use the "normal" or "none" margins, you can either set the `margin` prop on each Input component individually, or set the `margin` prop directly on the Form component. In that case, the Form component will transmit the `margin` to each Input.
 
 ```jsx
-export const PostEdit = (props) => (
+export const PostEdit = props => (
     <Edit {...props}>
-        <SimpleForm margin="normal">
-            ...
-        </SimpleForm>
+        <SimpleForm margin="normal">...</SimpleForm>
     </Edit>
 );
 ```
@@ -948,11 +1005,7 @@ The input components are wrapped inside a `div` to ensure a good looking form by
 
 ```jsx
 import React from 'react';
-import {
-    Edit,
-    SimpleForm,
-    TextInput,
-} from 'react-admin';
+import { Edit, SimpleForm, TextInput } from 'react-admin';
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles({
@@ -964,14 +1017,20 @@ export const UserEdit = props => {
     return (
         <Edit {...props}>
             <SimpleForm>
-                <TextInput source="first_name" formClassName={classes.inlineBlock} />
-                <TextInput source="last_name" formClassName={classes.inlineBlock} />
+                <TextInput
+                    source="first_name"
+                    formClassName={classes.inlineBlock}
+                />
+                <TextInput
+                    source="last_name"
+                    formClassName={classes.inlineBlock}
+                />
                 {/* This input will be display below the two first ones */}
                 <TextInput source="email" type="email" />
             </SimpleForm>
         </Edit>
-    )
-}
+    );
+};
 ```
 
 ### `fullWidth`
@@ -1020,8 +1079,8 @@ const MyTextInput = props => (
     <div className="special-input">
         <TextInput {...props} />
     </div>
-)
-export const PostCreate = (props) => (
+);
+export const PostCreate = props => (
     <Create {...props}>
         <SimpleForm>
             {/* this works */}
@@ -1035,10 +1094,10 @@ export const PostCreate = (props) => (
 
 ### Custom Form Component
 
-The `<SimpleForm>` and `<TabbedForm>` layouts are quite simple. In order to better use the screen real estate, you may want to arrange inputs differently, e.g. putting them in groups, adding separators, etc. For that purpose, you need to write a custom form layout, and use it instead of `<SimpleForm>`. 
+The `<SimpleForm>` and `<TabbedForm>` layouts are quite simple. In order to better use the screen real estate, you may want to arrange inputs differently, e.g. putting them in groups, adding separators, etc. For that purpose, you need to write a custom form layout, and use it instead of `<SimpleForm>`.
 
 ![custom form layout](./img/custom-form-layout.png)
- 
+
 Here is an example of such custom form, taken from the Posters Galore demo. It uses [material-ui's `<Box>` component](https://material-ui.com/components/box/), and it's a good starting point for your custom form layouts.
 
 ```jsx
@@ -1053,7 +1112,7 @@ import {
 } from 'react-admin';
 import { CardContent, Typography, Box, Toolbar } from '@material-ui/core';
 
-const VisitorForm = (props) => (
+const VisitorForm = props => (
     <FormWithRedirect
         {...props}
         render={formProps => (
@@ -1062,49 +1121,92 @@ const VisitorForm = (props) => (
                 <Box p="1em">
                     <Box display="flex">
                         <Box flex={2} mr="1em">
-
-                            <Typography variant="h6" gutterBottom>Identity</Typography>
+                            <Typography variant="h6" gutterBottom>
+                                Identity
+                            </Typography>
 
                             <Box display="flex">
                                 <Box flex={1} mr="0.5em">
-                                    <TextInput source="first_name" resource="customers" fullWidth />
+                                    <TextInput
+                                        source="first_name"
+                                        resource="customers"
+                                        fullWidth
+                                    />
                                 </Box>
                                 <Box flex={1} ml="0.5em">
-                                    <TextInput source="last_name" resource="customers" fullWidth />
+                                    <TextInput
+                                        source="last_name"
+                                        resource="customers"
+                                        fullWidth
+                                    />
                                 </Box>
                             </Box>
-                            <TextInput source="email" resource="customers" type="email" fullWidth />
+                            <TextInput
+                                source="email"
+                                resource="customers"
+                                type="email"
+                                fullWidth
+                            />
                             <DateInput source="birthday" resource="customers" />
                             <Box mt="1em" />
 
-                            <Typography variant="h6" gutterBottom>Address</Typography>
+                            <Typography variant="h6" gutterBottom>
+                                Address
+                            </Typography>
 
-                            <TextInput resource="customers" source="address" multiline fullWidth />
+                            <TextInput
+                                resource="customers"
+                                source="address"
+                                multiline
+                                fullWidth
+                            />
                             <Box display="flex">
                                 <Box flex={1} mr="0.5em">
-                                    <TextInput source="zipcode" resource="customers" fullWidth />
+                                    <TextInput
+                                        source="zipcode"
+                                        resource="customers"
+                                        fullWidth
+                                    />
                                 </Box>
                                 <Box flex={2} ml="0.5em">
-                                    <TextInput source="city" resource="customers" fullWidth />
+                                    <TextInput
+                                        source="city"
+                                        resource="customers"
+                                        fullWidth
+                                    />
                                 </Box>
                             </Box>
                         </Box>
 
                         <Box flex={1} ml="1em">
-                            
-                            <Typography variant="h6" gutterBottom>Stats</Typography>
+                            <Typography variant="h6" gutterBottom>
+                                Stats
+                            </Typography>
 
-                            <SelectArrayInput source="groups" resource="customers" choices={segments} fullWidth />
-                            <NullableBooleanInput source="has_newsletter" resource="customers" />
+                            <SelectArrayInput
+                                source="groups"
+                                resource="customers"
+                                choices={segments}
+                                fullWidth
+                            />
+                            <NullableBooleanInput
+                                source="has_newsletter"
+                                resource="customers"
+                            />
                         </Box>
-
                     </Box>
                 </Box>
                 <Toolbar>
-                    <Box display="flex" justifyContent="space-between" width="100%">
+                    <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        width="100%"
+                    >
                         <SaveButton
                             saving={formProps.saving}
-                            handleSubmitWithRedirect={formProps.handleSubmitWithRedirect}
+                            handleSubmitWithRedirect={
+                                formProps.handleSubmitWithRedirect
+                            }
                         />
                         <DeleteButton record={formProps.record} />
                     </Box>
@@ -1132,6 +1234,7 @@ const VisitorEdit = props => (
 **Tip**: `FormWithRedirect` contains some logic that you may not want. In fact, nothing forbids you from using [a react-final-form `Form` component](https://final-form.org/docs/react-final-form/api/Form) as root component for a custom form layout. You'll have to set initial values based the injected `record` prop manually, as follows:
 
 {% raw %}
+
 ```jsx
 import { sanitizeEmptyValues } from 'react-admin';
 import { Form } from 'react-final-form';
@@ -1142,7 +1245,7 @@ import { CardContent, Typography, Box } from '@material-ui/core';
 const VisitorForm = ({ basePath, record, save, saving, version }) => {
     const submit = values => {
         // React-final-form removes empty values from the form state.
-        // To allow users to *delete* values, this must be taken into account 
+        // To allow users to *delete* values, this must be taken into account
         save(sanitizeEmptyValues(record, values));
     };
     return (
@@ -1166,46 +1269,53 @@ const defaultSubscription = {
     invalid: true,
 };
 ```
+
 {% endraw %}
 
 ## Displaying Fields or Inputs depending on the user permissions
 
-You might want to display some fields, inputs or filters only to users with specific permissions. 
+You might want to display some fields, inputs or filters only to users with specific permissions.
 
 Before rendering the `Create` and `Edit` components, react-admin calls the `authProvider.getPermissions()` method, and passes the result to the component as the `permissions` prop. It's up to your `authProvider` to return whatever you need to check roles and permissions inside your component.
 
 Here is an example inside a `Create` view with a `SimpleForm` and a custom `Toolbar`:
 
 {% raw %}
+
 ```jsx
-const UserCreateToolbar = ({ permissions, ...props }) =>
+const UserCreateToolbar = ({ permissions, ...props }) => (
     <Toolbar {...props}>
         <SaveButton
             label="user.action.save_and_show"
             redirect="show"
             submitOnEnter={true}
         />
-        {permissions === 'admin' &&
+        {permissions === 'admin' && (
             <SaveButton
                 label="user.action.save_and_add"
                 redirect={false}
                 submitOnEnter={false}
                 variant="text"
-            />}
-    </Toolbar>;
+            />
+        )}
+    </Toolbar>
+);
 
-export const UserCreate = ({ permissions, ...props }) =>
+export const UserCreate = ({ permissions, ...props }) => (
     <Create {...props}>
         <SimpleForm
             toolbar={<UserCreateToolbar permissions={permissions} />}
             initialValues={{ role: 'user' }}
         >
             <TextInput source="name" validate={[required()]} />
-            {permissions === 'admin' &&
-                <TextInput source="role" validate={[required()]} />}
+            {permissions === 'admin' && (
+                <TextInput source="role" validate={[required()]} />
+            )}
         </SimpleForm>
-    </Create>;
+    </Create>
+);
 ```
+
 {% endraw %}
 
 **Tip**: Note how the `permissions` prop is passed down to the custom `toolbar` component.
@@ -1213,21 +1323,25 @@ export const UserCreate = ({ permissions, ...props }) =>
 This also works inside an `Edition` view with a `TabbedForm`, and you can hide a `FormTab` completely:
 
 {% raw %}
+
 ```jsx
-export const UserEdit = ({ permissions, ...props }) =>
+export const UserEdit = ({ permissions, ...props }) => (
     <Edit title={<UserTitle />} {...props}>
         <TabbedForm initialValues={{ role: 'user' }}>
             <FormTab label="user.form.summary">
                 {permissions === 'admin' && <TextInput disabled source="id" />}
                 <TextInput source="name" validate={required()} />
             </FormTab>
-            {permissions === 'admin' &&
+            {permissions === 'admin' && (
                 <FormTab label="user.form.security">
                     <TextInput source="role" validate={required()} />
-                </FormTab>}
+                </FormTab>
+            )}
         </TabbedForm>
-    </Edit>;
+    </Edit>
+);
 ```
+
 {% endraw %}
 
 ## Altering the Form Values before Submitting
@@ -1235,8 +1349,11 @@ export const UserEdit = ({ permissions, ...props }) =>
 Sometimes, you may want your custom action to alter the form values before actually sending them to the `dataProvider`.
 For those cases, you should know that every button inside a form [Toolbar](#toolbar) receive two props:
 
-- `handleSubmit` which calls the default form save method
-- `handleSubmitWithRedirect` which calls the default form save method but allows to specify a custom redirection
+-   `handleSubmit` which calls the default form save method
+-   `handleSubmitWithRedirect` which calls the default form save method but allows to specify a custom redirection
+
+They both runs both validation and submission. So if you overload them, you will have to perform the validation manually.
+To simplify this, if you want to overload the submission but to keep the validation, don't overload `handleSubmit` or `handleSubmitWithRedirect` but use instead `onSave`.
 
 Knowing this, there are two ways to alter the form values before submit:
 
@@ -1245,7 +1362,13 @@ Knowing this, there are two ways to alter the form values before submit:
 ```jsx
 import React, { useCallback } from 'react';
 import { useForm } from 'react-final-form';
-import { SaveButton, Toolbar, useCreate, useRedirect, useNotify } from 'react-admin';
+import {
+    SaveButton,
+    Toolbar,
+    useCreate,
+    useRedirect,
+    useNotify,
+} from 'react-admin';
 
 const SaveWithNoteButton = ({ handleSubmitWithRedirect, ...props }) => {
     const [create] = useCreate('posts');
@@ -1271,45 +1394,96 @@ For instance, in the `simple` example:
 
 ```jsx
 import React, { useCallback } from 'react';
-import { useFormState } from 'react-final-form';
-import { SaveButton, Toolbar, useCreate, useRedirect, useNotify } from 'react-admin';
+import {
+    SaveButton,
+    Toolbar,
+    useCreate,
+    useRedirect,
+    useNotify,
+} from 'react-admin';
 
 const SaveWithNoteButton = props => {
     const [create] = useCreate('posts');
     const redirectTo = useRedirect();
     const notify = useNotify();
-    const { basePath, redirect } = props;
+    const { basePath } = props;
 
-    const formState = useFormState();
-    const handleClick = useCallback(() => {
-        if (!formState.valid) {
-            return;
-        }
-
-        create(
-            {
-                payload: { data: { ...formState.values, average_note: 10 } },
-            },
-            {
-                onSuccess: ({ data: newRecord }) => {
-                    notify('ra.notification.created', 'info', {
-                        smart_count: 1,
-                    });
-                    redirectTo(redirect, basePath, newRecord.id, newRecord);
+    const handleSave = useCallback(
+        (values, redirect) => {
+            create(
+                {
+                    payload: { data: { ...values, average_note: 10 } },
                 },
-            }
-        );
-    }, [
-        formState.valid,
-        formState.values,
-        create,
-        notify,
-        redirectTo,
-        redirect,
-        basePath,
-    ]);
+                {
+                    onSuccess: ({ data: newRecord }) => {
+                        notify('ra.notification.created', 'info', {
+                            smart_count: 1,
+                        });
+                        redirectTo(redirect, basePath, newRecord.id, newRecord);
+                    },
+                }
+            );
+        },
+        [create, notify, redirectTo, basePath]
+    );
 
-    return <SaveButton {...props} handleSubmitWithRedirect={handleClick} />;
+    return <SaveButton {...props} onSave={handleSave} />;
+};
+```
+
+`onSave` can also be used to perform custom call in your data provider without breaking the formalidation.
+
+```jsx
+import React, { useCallback } from 'react';
+import {
+    SaveButton,
+    Toolbar,
+    useCreate,
+    useRedirect,
+    useNotify,
+} from 'react-admin';
+import { useCustomPostCreate } from 'customHooks',
+
+const SaveWithNoteButton = props => {
+    const [create] = useCreate('posts');
+    const [customCreate] = useCustomPostCreate();
+    const redirectTo = useRedirect();
+    const notify = useNotify();
+    const { basePath } = props;
+
+    const handleSave = useCallback(
+        (values, redirect) => {
+            customCreate(
+                {
+                    payload: {
+                        data: { somethingCustom : 'true' },
+                    },
+                },
+                {
+                    onSuccess: ({ data: newRecord }) => {
+                        create(
+                            {
+                                payload: {
+                                    data: { values },
+                                },
+                            },
+                            {
+                                onSuccess: ({ data: newRecord }) => {
+                                    notify('ra.notification.created', 'info', {
+                                        smart_count: 1,
+                                    });
+                                    redirectTo(redirect, basePath, newRecord.id, newRecord);
+                                },
+                            }
+                        );
+                    },
+                }
+            );
+        },
+        [create, notify, redirectTo, basePath]
+    );
+
+    return <SaveButton {...props} onSave={handleSave} />;
 };
 ```
 
