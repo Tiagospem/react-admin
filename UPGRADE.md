@@ -109,10 +109,11 @@ If you were using custom buttons (to alter the form values before submit for exa
 
 The migration to `react-final-form` changes their signature and behavior to the following:
 
--   `handleSubmit`: accepts no arguments, and will submit the form with its current values immediately
--   `handleSubmitWithRedirect` accepts a custom redirect, and will submit the form with its current values immediately
+-   `handleSubmit` which calls the default form save method
+-   `handleSubmitWithRedirect` which calls the default form save method but allows to specify a custom redirection
 
-They both runs both validation and submission. So if you overload them, you will have to perform the validation manually.
+The two functions run both validation and submission. So if you overload them, **you will have to manage the form validation manually**.
+
 To simplify this, if you want to overload the submission but to keep the validation, don't overload `handleSubmit` or `handleSubmitWithRedirect` but use instead `onSave`.
 
 -   `onSave` have two props, the form values to save and the redirection to perform.
@@ -121,83 +122,81 @@ Here's how to migrate the _Altering the Form Values before Submitting_ example f
 
 1. Using the `react-final-form` hook API to send change events
 
-```jsx
-import React, { useCallback } from 'react';
-import { useForm } from 'react-final-form';
-import {
-    SaveButton,
-    Toolbar,
-    useCreate,
-    useRedirect,
-    useNotify,
-} from 'react-admin';
+    ```jsx
+    import React, { useCallback } from 'react';
+    import { useForm } from 'react-final-form';
+    import {
+        SaveButton,
+        Toolbar,
+        useCreate,
+        useRedirect,
+        useNotify,
+    } from 'react-admin';
 
-const SaveWithNoteButton = ({
-    handleSubmit,
-    handleSubmitWithRedirect,
-    ...props
-}) => {
-    const [create] = useCreate('posts');
-    const redirectTo = useRedirect();
-    const notify = useNotify();
-    const { basePath, redirect } = props;
+    const SaveWithNoteButton = ({
+        handleSubmit,
+        handleSubmitWithRedirect,
+        ...props
+    }) => {
+        const [create] = useCreate('posts');
+        const redirectTo = useRedirect();
+        const notify = useNotify();
+        const { basePath, redirect } = props;
 
-    const form = useForm();
+        const form = useForm();
 
-    const handleClick = useCallback(() => {
-        form.change('average_note', 10);
+        const handleClick = useCallback(() => {
+            form.change('average_note', 10);
 
-        handleSubmitWithRedirect('edit');
-    }, [form]);
+            handleSubmitWithRedirect('edit');
+        }, [form]);
 
-    return <SaveButton {...props} handleSubmitWithRedirect={handleClick} />;
-};
-```
+        return <SaveButton {...props} handleSubmitWithRedirect={handleClick} />;
+    };
+    ```
 
 2. Using react-admin hooks to run custom mutations
 
-For instance, in the `simple` example:
+    ```jsx
+    import React, { useCallback } from 'react';
+    import {
+        SaveButton,
+        Toolbar,
+        useCreate,
+        useRedirect,
+        useNotify,
+    } from 'react-admin';
 
-```jsx
-import React, { useCallback } from 'react';
-import {
-    SaveButton,
-    Toolbar,
-    useCreate,
-    useRedirect,
-    useNotify,
-} from 'react-admin';
+    const SaveWithNoteButton = props => {
+        const [create] = useCreate('posts');
+        const redirectTo = useRedirect();
+        const notify = useNotify();
+        const { basePath } = props;
 
-const SaveWithNoteButton = props => {
-    const [create] = useCreate('posts');
-    const redirectTo = useRedirect();
-    const notify = useNotify();
-    const { basePath } = props;
-
-    const handleSave = useCallback(
-        (values, redirect) => {
-            create(
-                {
-                    payload: {
-                        data: { values, average_note: 10 },
+        const handleSave = useCallback(
+            (values, redirect) => {
+                create(
+                    {
+                        payload: {
+                            data: { values, average_note: 10 },
+                        },
                     },
-                },
-                {
-                    onSuccess: ({ data: newRecord }) => {
-                        notify('ra.notification.created', 'info', {
-                            smart_count: 1,
-                        });
-                        redirectTo(redirect, basePath, newRecord.id, newRecord);
-                    },
-                }
-            );
-        },
-        [create, notify, redirectTo, basePath]
-    );
+                    {
+                        onSuccess: ({ data: newRecord }) => {
+                            notify('ra.notification.created', 'info', {
+                                smart_count: 1,
+                            });
+                            redirectTo(redirect, basePath, newRecord.id, newRecord);
+                        },
+                    }
+                );
+            },
+            [create, notify, redirectTo, basePath]
+        );
 
-    return <SaveButton {...props} onSave={handleSave} />;
-};
-```
+        return <SaveButton {...props} onSave={handleSave} />;
+    };
+    ```
 
 `onSave` can also be used to perform custom call in your data provider without breaking the formalidation.
 
@@ -210,27 +209,40 @@ import {
     useRedirect,
     useNotify,
 } from 'react-admin';
+import { useCustomPostCreate } from 'customHooks',
 
 const SaveWithNoteButton = props => {
     const [create] = useCreate('posts');
+    const [customCreate] = useCustomPostCreate();
     const redirectTo = useRedirect();
     const notify = useNotify();
     const { basePath } = props;
 
     const handleSave = useCallback(
         (values, redirect) => {
-            create(
+            useCustomPostCreate(
                 {
                     payload: {
-                        data: { values, average_note: 10 },
+                        data: { somethingCustom : 'true' },
                     },
                 },
                 {
                     onSuccess: ({ data: newRecord }) => {
-                        notify('ra.notification.created', 'info', {
-                            smart_count: 1,
-                        });
-                        redirectTo(redirect, basePath, newRecord.id, newRecord);
+                        create(
+                            {
+                                payload: {
+                                    data: { values },
+                                },
+                            },
+                            {
+                                onSuccess: ({ data: newRecord }) => {
+                                    notify('ra.notification.created', 'info', {
+                                        smart_count: 1,
+                                    });
+                                    redirectTo(redirect, basePath, newRecord.id, newRecord);
+                                },
+                            }
+                        );
                     },
                 }
             );
